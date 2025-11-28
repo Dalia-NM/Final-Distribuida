@@ -22,5 +22,5 @@ mostrando directamente el formato json.
 # Orden de ejecución
 - Configura la baraja y luego ejecuta publicar.py
 -  consumidor.py para que esté listo en espera
--  ashboard.py para poder apreciar el proceso
--  ro.py para iniciar la simulación
+-  dashboard.py para poder apreciar el proceso
+-  pro.py para iniciar la simulación
