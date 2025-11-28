@@ -20,7 +20,7 @@ No es escencial para que funcione el proyecto, ya que solo permite configurar la
 mostrando directamente el formato json.
 
 # Orden de ejecución
-1.- Configura la baraja y luego ejecuta publicar.py
-2.- consumidor.py para que esté listo en espera
-3.- dashboard.py para poder apreciar el proceso
-4.- pro.py para iniciar la simulación
+- Configura la baraja y luego ejecuta publicar.py
+-  consumidor.py para que esté listo en espera
+-  ashboard.py para poder apreciar el proceso
+-  ro.py para iniciar la simulación
