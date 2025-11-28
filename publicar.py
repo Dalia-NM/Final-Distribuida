@@ -5,7 +5,7 @@ import sys
 # Configuración de la baraja
 # La suma total de los valores no debe exceder 52 para ser una baraja estándar.
 config = {
-  "A": 10, "2": 1, "3": 1, "4": 4, "5": 4,
+  "A": 4, "2": 4, "3": 4, "4": 4, "5": 4,
   "6": 4, "7": 4, "8": 4, "9": 4, "10": 4,
   "J": 4, "Q": 4, "K": 4
 }
@@ -47,3 +47,4 @@ except pika.exceptions.AMQPConnectionError as e:
     print(f"Detalle: {e}")
 except Exception as e:
     print(f"\nERROR desconocido durante la publicación: {e}")
+
