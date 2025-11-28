@@ -1,8 +1,9 @@
 import json
-#Configurar baraja
+import random
+
+# Configurar baraja
 # Baraja de base clasica de poker
 # 52 cartas con 4 ases, 12 figuras y 36 cartas numericas
-# 4 cartas de cada valor (A,2,3,4,5,6,7,8,9,10,J,Q,K)
 
 class Baraja:
 
@@ -42,71 +43,16 @@ class Baraja:
         print(f"Baraja modificada: {valor_carta} ahora tiene {cantidad_nuevo} cartas. Total actual: {total_nuevo}")
         return True
 
-    def modificar_varias(self, cambios: dict, allow_partial=False):
-        # Validar entradas
-        invalido= [k for k in cambios.keys() if k not in self.CARTAS_VALORES]
-        if invalido:
-            print(f"Valores invalidos en cambios: {invalido}")
-            return ([], list(cambios.keys()))
-
-        for k, v in cambios.items():
-            if not isinstance(v, int) or v < 0:
-                print(f"Valor invalido para {k}: {v} (debe ser int >= 0)")
-                return ([], list(cambios.keys()))
-
-        # Calcular nuevo total si aplicamos todos
-        total_actual = self.obtener_total()
-        nuevo_total = total_actual
-        for k, v in cambios.items():
-            nuevo_total += (v - self.config[k])
-
-        if self.enforce_max and nuevo_total > self.MAX:
-            if not allow_partial:
-                print(f"El cambio rechazado: el total propuesto {nuevo_total} excede MAX {self.MAX}")
-                return ([], list(cambios.keys()))
-            # Si permitimos parcial, aplicamos solo los que no causen overflow
-            applied = []
-            rejected = []
-            for k, v in cambios.items():
-                tentative_total = self.obtener_total() + (v - self.config[k])
-                if tentative_total <= self.MAX:
-                    self.config[k] = v
-                    applied.append(k)
-                else:
-                    rejected.append(k)
-            print(f"Parcial aplicado: {applied}. Rechazados: {rejected}")
-            return (applied, rejected)
-#Aplicar todos los cambios
-        for k, v in cambios.items():
-            self.config[k] = v
-
-        print(f"Cambios aplicados: {list(cambios.keys())}. Total ahora: {self.obtener_total()}")
-        return (list(cambios.keys()), [])
-
-    def set_max(self, new_max):
-        if new_max is None:
-            self.MAX = None
-            self.enforce_max = False
-            print("Limite de total desactivado (MAX = None)")
-            return
-        if not isinstance(new_max, int) or new_max < 0:
-            print("new_max debe ser un entero >= 0 o None")
-            return
-        self.MAX = new_max
-        print(f"Nuevo MAX establecido {self.MAX}")
-
-    #Formato JSON
     def to_json(self):
         return json.dumps(self.config)
 
-    #Crear baraja desde JSON
     @classmethod
     def from_json(cls, json_data):
         instance = cls()
         instance.config = json.loads(json_data)
         return instance
 
-#Conversion de valores para figuras y ases
+# --- Funciones de Lógica de Blackjack ---
 
 def get_valor_carta(carta):
     if carta in ('J', 'Q', 'K'):
@@ -116,14 +62,61 @@ def get_valor_carta(carta):
     else:
         return int(carta)
 
-#Calcula valor de la mano
-
 def calcular_mano(mano):
     value = sum(get_valor_carta(carta) for carta in mano)
     num_aces = mano.count('A')
+    
     # Ajustar el valor de los Ases de 11 a 1 si es necesario
     while value > 21 and num_aces > 0:
         value -= 10
         num_aces -= 1
         
     return value
+
+def simulate_blackjack(baraja_config):
+    #Crear una baraja para la simulación
+    deck = []
+    for card_value, count in baraja_config.items():
+        deck.extend([card_value] * count)
+        
+    random.shuffle(deck)
+
+    #Repartir manos
+    try:
+        # Se extraen 4 cartas para jugador y dealer
+        player_hand = [deck.pop(), deck.pop()]
+        dealer_hand = [deck.pop(), deck.pop()]
+    except IndexError:
+        return "ERROR_NO_CARTAS" 
+    
+    #Turno del Jugador (Pide hasta 17 o se pasa)
+    while calcular_mano(player_hand) < 17:
+        try:
+            player_hand.append(deck.pop())
+        except IndexError:
+            break
+            
+    player_score = calcular_mano(player_hand)
+    
+    if player_score > 21:
+        return "DERROTA"
+
+    #Turno del Crupier (Pide hasta 17 o se pasa)
+    dealer_score = calcular_mano(dealer_hand)
+    while dealer_score < 17:
+        try:
+            dealer_hand.append(deck.pop())
+            dealer_score = calcular_mano(dealer_hand)
+        except IndexError:
+            break
+
+    if dealer_score > 21:
+        return "VICTORIA"
+
+    #Comparar resultados
+    if player_score > dealer_score:
+        return "VICTORIA"
+    elif player_score < dealer_score:
+        return "DERROTA"
+    else:
+        return "EMPATE"
